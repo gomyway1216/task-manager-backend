@@ -1,26 +1,14 @@
 package com.yudaiyaguchi.taskmanager.model;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.yudaiyaguchi.taskmanager.service.TaskSerializer;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name="task")
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties({"hibernate_lazy_initializer", "handler"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")
-@JsonSerialize(using = TaskSerializer.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Task {
 
     @Id
@@ -36,20 +24,20 @@ public class Task {
     private String appName;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"parent", "children", "tags"})
     private Task parent;
 
-    @OneToMany(fetch = FetchType.LAZY,mappedBy = "parent")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"parent", "children", "tags"})
     private Set<Task> children;
 
-
-    @JsonBackReference
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "task_tag",
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @JsonIgnoreProperties("tasks")
     private Set<Tag> tags = new HashSet<>();
 
     public Task() {
@@ -102,6 +90,10 @@ public class Task {
         return timeUpdated;
     }
 
+    public void setTimeUpdated(Instant timeUpdated) {
+        this.timeUpdated = timeUpdated;
+    }
+
     public Instant getTimeDue() {
         return timeDue;
     }
@@ -142,7 +134,8 @@ public class Task {
         this.tags = tags;
     }
 
-    @JsonIgnore
+    // use @JsonIgnore to prevent returning children in JSON
+    //    @JsonIgnore
     public Set<Task> getChildren() {
         return children;
     }
@@ -156,18 +149,33 @@ public class Task {
         timeUpdated = Instant.now();
     }
 
-//    @Override
-//    public int hashCode() {
-//        final int prime = 31;
-//        int result = 1;
-//        result = prime * result + ((id == null) ? 0 : id.hashCode());
-//        return result;
-//    }
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
 
-//    @Override
-//    public String toString() {
-//        return this.id + " " + this.title + " " + this.timeCreated + " " + this.timeUpdated + " " + this.timeDue + " " + this.description + " " + this.link + " " + this.appName
-//                + " " + this.parent + " " + this.children + " " + this.tags;
-//    }
-
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Task other = (Task) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
+        return true;
+    }
 }

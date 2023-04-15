@@ -1,7 +1,6 @@
-package com.yudaiyaguchi.taskmanager.dto;
+package com.yudaiyaguchi.taskmanager.request;
 
 import lombok.Data;
-
 import java.time.Instant;
 import java.util.List;
 

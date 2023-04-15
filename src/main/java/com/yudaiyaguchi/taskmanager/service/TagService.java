@@ -1,67 +1,59 @@
 package com.yudaiyaguchi.taskmanager.service;
 
-import com.yudaiyaguchi.taskmanager.dto.TagResponse;
-import com.yudaiyaguchi.taskmanager.dto.TagWithTasksDTO;
+import com.yudaiyaguchi.taskmanager.request.*;
+import com.yudaiyaguchi.taskmanager.exception.ResourceNotFoundException;
 import com.yudaiyaguchi.taskmanager.model.Tag;
-import com.yudaiyaguchi.taskmanager.repository.TagMapper;
+import com.yudaiyaguchi.taskmanager.model.Task;
 import com.yudaiyaguchi.taskmanager.repository.TagRepository;
-import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class TagService {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(TagService.class);
     @Autowired
     private TagRepository tagRepository;
 
-    @Autowired
-    private TagMapper tagMapper;
-
-//    public List<TagResponse> getAllTagsByUserId(String userId) {
-////        return tagRepository.findAllByUserId(userId);
-//        List<Tag> tags = tagRepository.findTagsByUserIdWithTasks(userId);
-//        List<TagResponse> tagDTOs = tags.stream()
-//                .map(tag -> {
-//                    TagResponse tagDTO = new TagResponse();
-//                    tagDTO.setId(tag.getId());
-//                    tagDTO.setUserId(tag.getUserId());
-//                    tagDTO.setName(tag.getName());
-//                    tagDTO.setTasks(tag.getTasks());
-//                    return tagDTO;
-//                })
-//                .collect(Collectors.toList());
-//        return tagDTOs;
-//    }
-
-    public List<TagWithTasksDTO> findAllByUserIdWithTasks(String userId) {
-        List<Tag> tags = tagRepository.findAllByUserId(userId);
-        return tags.stream()
-                .map(tagMapper::toTagWithTasksDTO)
-                .collect(Collectors.toList());
-    }
-
-//    public List<Tag> findAllByUserIdWithTasks(String userId) {
-//        List<Tag> tags = tagRepository.findAllByUserId(userId);
-//        tags.forEach(tag -> Hibernate.initialize(tag.getTasks()));
-//        return tags;
-//    }
-
-    public Optional<Tag> getTagById(Long id) {
-        return tagRepository.findById(id);
-    }
-
-    public Tag createTag(Tag tag) {
+    public Tag createTag(TagRequest tagRequest) {
+        Tag tag = new Tag();
+        tag.setUserId(tagRequest.getUserId());
+        tag.setName(tagRequest.getName());
         return tagRepository.save(tag);
     }
 
-    public Tag updateTag(Tag tag) {
+    public Tag updateTag(Long tagId, TagRequest tagRequest) {
+        Tag tag = tagRepository.findByIdAndUserId(tagId, tagRequest.getUserId());
+        if(tag == null) {
+            throw new ResourceNotFoundException("Tag not found");
+        }
+
+        tag.setName(tagRequest.getName());
         return tagRepository.save(tag);
     }
 
-    public void deleteTag(Long id) {
-        tagRepository.deleteById(id);
+    public Tag getTagWithTasksByUserIdAndTagId(String userId, Long tagId) {
+       Tag tagR = tagRepository.findByIdAndUserId(tagId, userId);
+       return tagR;
+    }
+
+    public List<Tag> getTagsByUserIdWithoutTasks(String userId) {
+        List<Tag> tags = tagRepository.findByUserId(userId);
+        return tags;
+    }
+
+    public void deleteTagByUserIdAndTagId(String userId, Long tagId) {
+        Tag tag = tagRepository.findByIdAndUserId(tagId, userId);
+        if(tag != null) {
+            // Remove the relationships between the tag and its associated tasks
+            Set<Task> tasks = tag.getTasks();
+            for (Task task : tasks) {
+                task.getTags().remove(tag);
+            }
+            tagRepository.delete(tag);
+        }
     }
 }

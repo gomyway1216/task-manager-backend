@@ -1,19 +1,12 @@
 package com.yudaiyaguchi.taskmanager.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-//@Data
 @Table(name="tag")
-@NamedEntityGraph(name = "Tag.tasks",
-        attributeNodes = @NamedAttributeNode("tasks"))
 public class Tag {
 
     @Id
@@ -47,8 +40,8 @@ public class Tag {
         this.name = name;
     }
 
-    @JsonManagedReference
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"tags", "parent", "children"})
     private Set<Task> tasks = new HashSet<>();
 
     public Set<Task> getTasks() {
