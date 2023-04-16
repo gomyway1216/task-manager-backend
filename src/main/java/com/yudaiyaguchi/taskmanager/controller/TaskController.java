@@ -10,7 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -33,19 +32,34 @@ public class TaskController {
     @GetMapping("/user/{userId}/task/{taskId}")
     public ResponseEntity<Task> getTaskById(@PathVariable String userId, @PathVariable Long taskId) {
         Task task = taskService.getTaskByIdAndUserId(userId, taskId);
+        if (task == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return ResponseEntity.ok(task);
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@Valid @RequestBody TaskRequest taskRequest) {
+    public ResponseEntity<Task> createTask(@RequestBody TaskRequest taskRequest) {
+        if (taskRequest.getUserId() == null || taskRequest.getTitle() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         Task createdTask = taskService.createTask(taskRequest);
         return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest) {
-        return ResponseEntity.ok(taskService.updateTask(id, taskRequest));
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest) {
+        if (taskRequest.getUserId() == null || taskRequest.getTitle() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        Task updatedTask = taskService.updateTask(id, taskRequest);
+        if (updatedTask == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(updatedTask);
     }
+
+
 
     @DeleteMapping("/user/{userId}/tag/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id, @PathVariable String userId) {

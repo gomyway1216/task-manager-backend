@@ -15,7 +15,10 @@ public class Tag {
     private String userId;
     private String name;
 
-    // Getters and setters
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"tags", "parent", "children"})
+    private Set<Task> tasks = new HashSet<>();
+
     public Long getId() {
         return id;
     }
@@ -39,10 +42,6 @@ public class Tag {
     public void setName(String name) {
         this.name = name;
     }
-
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"tags", "parent", "children"})
-    private Set<Task> tasks = new HashSet<>();
 
     public Set<Task> getTasks() {
         return tasks;

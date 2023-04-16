@@ -29,7 +29,7 @@ public class Task {
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"parent", "children", "tags"})
-    private Set<Task> children;
+    private Set<Task> children = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(

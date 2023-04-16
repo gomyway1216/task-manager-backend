@@ -87,15 +87,10 @@ public class TaskService {
             Long taskId = task.getId();
 
             // Update the parent of the child tasks in the database
-            childrenTasks.forEach(child -> {
-                Task parentTask = taskRepository.findById(taskId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Parent task not found"));
-                child.setParent(parentTask);
+            for(Task child: childrenTasks) {
+                child.setParent(task);
                 taskRepository.save(child);
-            });
-        } else {
-            // Save the new task to the database
-            task = taskRepository.save(task);
+            }
         }
 
         // Set tags
@@ -127,10 +122,12 @@ public class TaskService {
             task.setParent(null);
         }
 
-        task.getChildren().forEach(child -> {
-            child.setParent(null);
-            taskRepository.save(child);
-        });
+        if (task.getChildren() != null) {
+            task.getChildren().forEach(child -> {
+                child.setParent(null);
+                taskRepository.save(child);
+            });
+        }
 
         // Set child tasks
         if (taskRequest.getChildrenIds() != null && !taskRequest.getChildrenIds().isEmpty()) {
@@ -141,12 +138,10 @@ public class TaskService {
             task.setChildren(new HashSet<>(childTasks));
 
             // Update the parent of the child tasks in the database
-            childTasks.forEach(child -> {
-                Task parentTask = taskRepository.findById(taskId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Parent task not found"));
-                child.setParent(parentTask);
+            for(Task child: childTasks) {
+                child.setParent(task);
                 taskRepository.save(child);
-            });
+            }
         } else {
             // Unlink existing child tasks
             List<Task> existingChildTasks = taskRepository.findAllByParentId(taskId);

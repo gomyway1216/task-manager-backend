@@ -29,13 +29,20 @@ public class TagController {
 
     @PostMapping
     public ResponseEntity<Tag> createTag(@RequestBody TagRequest tagRequest) {
+        if (tagRequest.getUserId() == null || tagRequest.getName() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         Tag createdTag = tagService.createTag(tagRequest);
         return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Tag> updateTag(@PathVariable Long id, @RequestBody TagRequest tagRequest) {
-        return ResponseEntity.ok(tagService.updateTag(id, tagRequest));
+        Tag updatedTag = tagService.updateTag(id, tagRequest);
+        if (updatedTag == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(updatedTag);
     }
 
     @DeleteMapping("/user/{userId}/tag/{id}")
