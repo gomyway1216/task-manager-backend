@@ -29,7 +29,6 @@ public class TaskService {
 
     public Page<Task> getTasksByUserId(@PathVariable String userId, Pageable pageable) {
         Page<Task> tasks = taskRepository.findAllByUserId(userId, pageable);
-        LOGGER.info("Tasks??");
         return tasks;
     }
 
