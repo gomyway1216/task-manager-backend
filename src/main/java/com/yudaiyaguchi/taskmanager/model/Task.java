@@ -23,6 +23,9 @@ public class Task {
     private String link;
     private String appName;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"parent", "children", "tags"})
     private Task parent;
@@ -132,6 +135,14 @@ public class Task {
 
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     // use @JsonIgnore to prevent returning children in JSON

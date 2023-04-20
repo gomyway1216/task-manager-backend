@@ -1,5 +1,6 @@
 package com.yudaiyaguchi.taskmanager.service;
 
+import com.yudaiyaguchi.taskmanager.dto.TaskNameIdDTO;
 import com.yudaiyaguchi.taskmanager.request.TaskRequest;
 import com.yudaiyaguchi.taskmanager.exception.ResourceNotFoundException;
 import com.yudaiyaguchi.taskmanager.model.Tag;
@@ -30,6 +31,10 @@ public class TaskService {
     public Page<Task> getTasksByUserId(@PathVariable String userId, Pageable pageable) {
         Page<Task> tasks = taskRepository.findAllByUserId(userId, pageable);
         return tasks;
+    }
+
+    public List<TaskNameIdDTO> getTasksByUserId(String userId) {
+        return taskRepository.findNameIdByUserId(userId);
     }
 
     // delete the task only but not the child tasks. It delete the reference to the parent task in

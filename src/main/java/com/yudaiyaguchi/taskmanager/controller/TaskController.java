@@ -1,5 +1,6 @@
 package com.yudaiyaguchi.taskmanager.controller;
 
+import com.yudaiyaguchi.taskmanager.dto.TaskNameIdDTO;
 import com.yudaiyaguchi.taskmanager.request.TaskRequest;
 import com.yudaiyaguchi.taskmanager.model.Task;
 import com.yudaiyaguchi.taskmanager.service.TaskService;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -26,6 +29,12 @@ public class TaskController {
             @RequestParam(defaultValue = "ASC") Sort.Direction direction) {
         Page<Task> tasks = taskService.getTasksByUserId(
                 userId, PageRequest.of(page, size, Sort.by(direction, sortBy)));
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<List<TaskNameIdDTO>> getAllTasks(@PathVariable String userId) {
+        List<TaskNameIdDTO> tasks = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(tasks);
     }
 
