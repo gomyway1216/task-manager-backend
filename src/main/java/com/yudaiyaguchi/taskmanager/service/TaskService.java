@@ -69,6 +69,18 @@ public class TaskService {
         task.setLink(taskRequest.getLink());
         task.setAppName(taskRequest.getAppName());
 
+        // Set tags
+        if (taskRequest.getTagIds() != null && !taskRequest.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(taskRequest.getTagIds());
+            // check if the tag belongs to the user
+            tags.stream().forEach(tag -> {
+                if (!tag.getUserId().equals(taskRequest.getUserId())) {
+                    throw new ResourceNotFoundException("Tag not found with ID: " + tag.getId());
+                }
+            });
+            task.setTags(new HashSet<>(tags));
+        }
+
         if (taskRequest.getParentId() != null) {
             Task parentTask = taskRepository.findById(taskRequest.getParentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Parent task not found"));
@@ -97,11 +109,6 @@ public class TaskService {
             }
         }
 
-        // Set tags
-        if (taskRequest.getTagIds() != null && !taskRequest.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(taskRequest.getTagIds());
-            task.setTags(new HashSet<>(tags));
-        }
         return taskRepository.save(task);
     }
 
@@ -116,6 +123,20 @@ public class TaskService {
         task.setDescription(taskRequest.getDescription());
         task.setLink(taskRequest.getLink());
         task.setAppName(taskRequest.getAppName());
+
+        // Set tags
+        if (taskRequest.getTagIds() != null && !taskRequest.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(taskRequest.getTagIds());
+            // check if the tag belongs to the user
+            tags.stream().forEach(tag -> {
+                if (!tag.getUserId().equals(taskRequest.getUserId())) {
+                    throw new ResourceNotFoundException("Tag not found with ID: " + tag.getId());
+                }
+            });
+            task.setTags(new HashSet<>(tags));
+        } else {
+            task.setTags(Collections.emptySet());
+        }
 
         // Set parent task
         if (taskRequest.getParentId() != null) {
@@ -153,14 +174,6 @@ public class TaskService {
                 childTask.setParent(null);
             }
             task.setChildren(Collections.emptySet());
-        }
-
-        // Set tags
-        if (taskRequest.getTagIds() != null && !taskRequest.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(taskRequest.getTagIds());
-            task.setTags(new HashSet<>(tags));
-        } else {
-            task.setTags(Collections.emptySet());
         }
 
         return taskRepository.save(task);
