@@ -113,9 +113,9 @@ public class TaskServiceTest {
 
         TaskRequest taskRequest = createTaskRequest("user-1", "Task 1", Instant.now(), "Description", "Link", "App", 1L, Arrays.asList(2L, 3L), Collections.emptyList());
 
-        when(taskRepository.findById(1L)).thenReturn(Optional.of(parentTask));
-        when(taskRepository.findById(2L)).thenReturn(Optional.of(childTask1));
-        when(taskRepository.findById(3L)).thenReturn(Optional.of(childTask2));
+        when(taskRepository.findByIdAndUserId(1L, "user-1")).thenReturn(parentTask);
+        when(taskRepository.findByIdAndUserId(2L, "user-1")).thenReturn(childTask1);
+        when(taskRepository.findByIdAndUserId(3L, "user-1")).thenReturn(childTask2);
         when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArgument(0, Task.class));
 
         Task result = taskService.createTask(taskRequest);

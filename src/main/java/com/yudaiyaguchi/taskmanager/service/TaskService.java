@@ -82,25 +82,31 @@ public class TaskService {
         }
 
         if (taskRequest.getParentId() != null) {
-            Task parentTask = taskRepository.findById(taskRequest.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Parent task not found"));
+            Task parentTask = taskRepository.findByIdAndUserId(taskRequest.getParentId(), taskRequest.getUserId());
+            if (parentTask == null) {
+                throw new ResourceNotFoundException("Parent task not found with ID: " + taskRequest.getParentId());
+            }
             task.setParent(parentTask);
         }
 
         if (taskRequest.getChildrenIds() != null && !taskRequest.getChildrenIds().isEmpty()) {
             Set<Task> childrenTasks = taskRequest.getChildrenIds().stream()
-                    .map(taskId -> taskRepository.findById(taskId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Child task not found")))
-                    .collect(Collectors.toSet());
+                    .map(id -> {
+                        LOGGER.info("Child task ID: " + id);
+                        Task childTask = taskRepository.findByIdAndUserId(id, taskRequest.getUserId());
+                        LOGGER.info("childTask {}", childTask);
+                        if (childTask == null) {
+                            LOGGER.info("Child task not found with ID: " + id);
+                            throw new ResourceNotFoundException("Child task not found with ID: " + id);
+                        }
+                        return childTask;
+                    }).collect(Collectors.toSet());
 
             // Set parent for the children tasks
             task.setChildren(childrenTasks);
 
             // Save the new task to the database
             task = taskRepository.save(task);
-
-            // Get the ID of the new task
-            Long taskId = task.getId();
 
             // Update the parent of the child tasks in the database
             for(Task child: childrenTasks) {
@@ -140,8 +146,10 @@ public class TaskService {
 
         // Set parent task
         if (taskRequest.getParentId() != null) {
-            Task parentTask = taskRepository.findById(taskRequest.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Parent task not found with ID: " + taskRequest.getParentId()));
+            Task parentTask = taskRepository.findByIdAndUserId(taskRequest.getParentId(), taskRequest.getUserId());
+            if (parentTask == null) {
+                throw new ResourceNotFoundException("Parent task not found with ID: " + taskRequest.getParentId());
+            }
             task.setParent(parentTask);
         } else {
             task.setParent(null);
@@ -156,14 +164,23 @@ public class TaskService {
 
         // Set child tasks
         if (taskRequest.getChildrenIds() != null && !taskRequest.getChildrenIds().isEmpty()) {
-            List<Task> childTasks = taskRepository.findAllById(taskRequest.getChildrenIds());
-            for (Task childTask : childTasks) {
-                childTask.setParent(task);
-            }
-            task.setChildren(new HashSet<>(childTasks));
+            Set<Task> childrenTasks = taskRequest.getChildrenIds().stream()
+                    .map(id -> {
+                        LOGGER.info("Child task ID: " + id);
+                        Task childTask = taskRepository.findByIdAndUserId(id, taskRequest.getUserId());
+                        LOGGER.info("childTask {}", childTask);
+                        if (childTask == null) {
+                            LOGGER.info("Child task not found with ID: " + id);
+                            throw new ResourceNotFoundException("Child task not found with ID: " + id);
+                        }
+                        return childTask;
+                    }).collect(Collectors.toSet());
+
+            // Set parent for the children tasks
+            task.setChildren(childrenTasks);
 
             // Update the parent of the child tasks in the database
-            for(Task child: childTasks) {
+            for(Task child: childrenTasks) {
                 child.setParent(task);
                 taskRepository.save(child);
             }
