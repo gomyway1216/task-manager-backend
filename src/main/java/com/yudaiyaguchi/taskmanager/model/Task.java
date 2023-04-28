@@ -31,7 +31,7 @@ public class Task {
     private Task parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"parent", "children", "tags"})
+    @JsonIgnoreProperties({"parent", "tags"})
     private Set<Task> children = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

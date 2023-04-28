@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,8 +28,13 @@ public class TaskService {
     @Autowired
     private TagRepository tagRepository;
 
-    public Page<Task> getTasksByUserId(@PathVariable String userId, Pageable pageable) {
+    public Page<Task> getTasksByUserId(String userId, Pageable pageable) {
         Page<Task> tasks = taskRepository.findAllByUserId(userId, pageable);
+        return tasks;
+    }
+
+    public Page<Task> getTasksWithFilters(Specification<Task> spec, Pageable pageable) {
+        Page<Task> tasks = taskRepository.findAll(spec, pageable);
         return tasks;
     }
 

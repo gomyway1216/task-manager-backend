@@ -38,9 +38,10 @@ public class TaskControllerTest {
         List<Task> tasks = Collections.singletonList(task);
         Page<Task> taskPage = new PageImpl<>(tasks);
 
-        when(taskService.getTasksByUserId(any(), any())).thenReturn(taskPage);
+        when(taskService.getTasksWithFilters(any(), any())).thenReturn(taskPage);
 
-        ResponseEntity<Page<Task>> response = taskController.getAllTasks("123", 0, 100, "id", Sort.Direction.ASC);
+        ResponseEntity<Page<Task>> response = taskController.getAllTasks("123", 0, 10, "id",
+                Sort.Direction.ASC, null, null, null,  null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().getContent().size());
