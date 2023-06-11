@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+
+import com.yudaiyaguchi.taskmanager.model.Status;
 import com.yudaiyaguchi.taskmanager.model.Task;
 import com.yudaiyaguchi.taskmanager.repository.TaskRepository;
 import com.yudaiyaguchi.taskmanager.repository.TagRepository;

@@ -1,6 +1,7 @@
 package com.yudaiyaguchi.taskmanager.service;
 
 import com.yudaiyaguchi.taskmanager.dto.TaskNameIdDTO;
+import com.yudaiyaguchi.taskmanager.model.Status;
 import com.yudaiyaguchi.taskmanager.request.TaskRequest;
 import com.yudaiyaguchi.taskmanager.exception.ResourceNotFoundException;
 import com.yudaiyaguchi.taskmanager.model.Tag;
@@ -13,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,6 +77,7 @@ public class TaskService {
         task.setDescription(taskRequest.getDescription());
         task.setLink(taskRequest.getLink());
         task.setAppName(taskRequest.getAppName());
+        task.setStatus(Status.Todo);
 
         // Set tags
         if (taskRequest.getTagIds() != null && !taskRequest.getTagIds().isEmpty()) {
@@ -198,6 +203,22 @@ public class TaskService {
             task.setChildren(Collections.emptySet());
         }
 
+        return taskRepository.save(task);
+    }
+
+    public Task updateTaskStatus(Long taskId, String userId, String status) {
+        // make sure the other user cannot update the task
+        Task task = taskRepository.findByIdAndUserId(taskId, userId);
+        if (task == null) {
+            throw new ResourceNotFoundException("Task not found with ID: " + taskId);
+        }
+        Status statusEnum;
+        try {
+            statusEnum = Status.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        }
+        task.setStatus(statusEnum);
         return taskRepository.save(task);
     }
 }

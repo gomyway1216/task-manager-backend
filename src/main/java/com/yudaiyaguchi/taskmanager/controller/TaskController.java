@@ -97,6 +97,14 @@ public class TaskController {
         return ResponseEntity.ok(updatedTask);
     }
 
+    @PutMapping("/user/{userId}/task/{id}/status/{status}")
+    public ResponseEntity<Task> updateTaskStatus(@PathVariable Long id, @PathVariable String userId, @PathVariable String status) {
+        Task updatedTask = taskService.updateTaskStatus(id, userId, status);
+        if (updatedTask == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(updatedTask);
+    }
 
 
     @DeleteMapping("/user/{userId}/task/{id}")

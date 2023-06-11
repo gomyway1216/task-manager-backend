@@ -22,6 +22,6 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     Task findByIdAndUserId(Long id, String userId);
 
-    @Query("SELECT new com.yudaiyaguchi.taskmanager.dto.TaskNameIdDTO(t.id, t.title) FROM Task t WHERE t.userId = :userId")
+    @Query("SELECT new com.yudaiyaguchi.taskmanager.dto.TaskNameIdDTO(t.id, t.title, t.status) FROM Task t WHERE t.userId = :userId")
     List<TaskNameIdDTO> findNameIdByUserId(@Param("userId") String userId);
 }
